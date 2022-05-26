@@ -279,17 +279,6 @@ class HardwareIdentityCredential extends IdentityCredential {
         return mCredential.getAuthKeysNeedingCertification();
     }
 
-    @SuppressWarnings("deprecation")
-    @Override
-    public void storeStaticAuthenticationData(@NonNull X509Certificate authenticationKey,
-            @NonNull byte[] staticAuthData) throws UnknownAuthenticationKeyException {
-        try {
-            mCredential.storeStaticAuthenticationData(authenticationKey, staticAuthData);
-        } catch (android.security.identity.UnknownAuthenticationKeyException e) {
-            throw new UnknownAuthenticationKeyException(e.getMessage(), e);
-        }
-    }
-
     @Override
     public @NonNull
     int[] getAuthenticationDataUsageCount() {
@@ -347,6 +336,17 @@ class HardwareIdentityCredential extends IdentityCredential {
             ApiImplS.callSetAllowUsingExpiredKeys(mCredential, allowUsingExpiredKeys);
         } else {
             throw new UnsupportedOperationException();
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public void storeStaticAuthenticationData(@NonNull X509Certificate authenticationKey,
+        @NonNull byte[] staticAuthData) throws UnknownAuthenticationKeyException {
+        try {
+            mCredential.storeStaticAuthenticationData(authenticationKey, staticAuthData);
+        } catch (android.security.identity.UnknownAuthenticationKeyException e) {
+            throw new UnknownAuthenticationKeyException(e.getMessage(), e);
         }
     }
 

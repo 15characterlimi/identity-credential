@@ -433,7 +433,7 @@ public class Utility {
                 }
             }
 
-            if (newEncodedIssuerSignedItemBytesForNs.size() > 0) {
+            if (!newEncodedIssuerSignedItemBytesForNs.isEmpty()) {
                 newIssuerSignedMapping.put(namespaceName, newEncodedIssuerSignedItemBytesForNs);
             }
         }

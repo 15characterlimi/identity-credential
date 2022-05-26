@@ -199,7 +199,6 @@ public final class DeviceResponseParser {
                 String expectedDocType,
                 DataItem issuerSigned,
                 Document.Builder builder) {
-            PublicKey deviceKey;
 
             MessageDigest digester;
             try {
@@ -215,8 +214,7 @@ public final class DeviceResponseParser {
             if (issuerAuthorityCertChain.size() < 1) {
                 throw new IllegalArgumentException("No x5chain element in issuer signature");
             }
-            PublicKey issuerAuthorityKey =
-                    issuerAuthorityCertChain.iterator().next().getPublicKey();
+            PublicKey issuerAuthorityKey = issuerAuthorityCertChain.get(0).getPublicKey();
 
             boolean issuerSignedAuthenticated = Util.coseSign1CheckSignature(
                     issuerAuthDataItem, null, issuerAuthorityKey);
@@ -231,7 +229,7 @@ public final class DeviceResponseParser {
 
             Pair<PublicKey, Map<String, Map<Integer, byte[]>>> msoResult =
                     parseMso(mobileSecurityObject, expectedDocType);
-            deviceKey = msoResult.first;
+            final PublicKey deviceKey = msoResult.first;
             Map<String, Map<Integer, byte[]>> digestMapping = msoResult.second;
 
             parseValidityInfo(mobileSecurityObject, builder);

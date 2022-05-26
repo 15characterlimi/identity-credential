@@ -17,6 +17,7 @@
 package com.android.identity;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import android.content.Context;
 import android.nfc.NdefRecord;
@@ -67,7 +68,6 @@ class DataTransportNfc extends DataTransport {
     boolean mListenerStillActive;
     ByteArrayOutputStream mIncomingMessage = new ByteArrayOutputStream();
     int numChunksReceived = 0;
-    private NfcOptions mOptions;
     private DataRetrievalAddress mListeningAddress;
 
     public DataTransportNfc(@NonNull Context context) {
@@ -193,7 +193,7 @@ class DataTransportNfc extends DataTransport {
 
     @Override
     public void listen() {
-        mOptions = new NfcOptions();
+        NfcOptions nfcOptions = new NfcOptions();
 
         // From ISO 18013-5 8.3.3.1.2 Data retrieval using near field communication (NFC):
         //
@@ -204,8 +204,8 @@ class DataTransportNfc extends DataTransport {
 
         // TODO: get these from underlying hardware instead of assuming they're the top limit.
         //
-        mOptions.commandDataFieldMaxLength = 0xffff;
-        mOptions.responseDataFieldMaxLength = 0x10000;
+        nfcOptions.commandDataFieldMaxLength = 0xffff;
+        nfcOptions.responseDataFieldMaxLength = 0x10000;
 
         mListeningAddress = new DataRetrievalAddressNfc(0xffff, 0x10000);
 
@@ -223,7 +223,7 @@ class DataTransportNfc extends DataTransport {
                     //Log.d(TAG, "Waiting for message to send");
                     byte[] messageToSend = null;
                     try {
-                        messageToSend = mWriterQueue.poll(1000, TimeUnit.MILLISECONDS);
+                        messageToSend = mWriterQueue.poll(1000, MILLISECONDS);
                     } catch (InterruptedException e) {
                         continue;
                     }
@@ -327,7 +327,7 @@ class DataTransportNfc extends DataTransport {
     public void onGetResponseApduReceived(@NonNull byte[] apdu) {
         //Log.d(TAG, "onGetResponseApduReceived, APDU: " + SUtil.toHex(apdu));
 
-        if (mListenerRemainingChunks == null || mListenerRemainingChunks.size() == 0) {
+        if (mListenerRemainingChunks == null || mListenerRemainingChunks.isEmpty()) {
             reportError(new Error("GET RESPONSE but we have no outstanding chunks"));
             return;
         }
@@ -339,7 +339,7 @@ class DataTransportNfc extends DataTransport {
         byte[] chunk = mListenerRemainingChunks.remove(0);
         mListenerRemainingBytesAvailable -= chunk.length;
 
-        boolean isLastChunk = (mListenerRemainingChunks.size() == 0);
+        boolean isLastChunk = (mListenerRemainingChunks.isEmpty());
 
         if (isLastChunk) {
             /* If Le ≥ the number of available bytes, the mdoc shall include all
@@ -646,9 +646,9 @@ class DataTransportNfc extends DataTransport {
         DataRetrievalAddressNfc address = (DataRetrievalAddressNfc) genericAddress;
 
         // TODO: hack
-        mOptions = new NfcOptions();
-        mOptions.commandDataFieldMaxLength = address.commandDataFieldMaxLength;
-        mOptions.responseDataFieldMaxLength = address.responseDataFieldMaxLength;
+        NfcOptions nfcOptions = new NfcOptions();
+        nfcOptions.commandDataFieldMaxLength = address.commandDataFieldMaxLength;
+        nfcOptions.responseDataFieldMaxLength = address.responseDataFieldMaxLength;
 
         if (mIsoDep == null) {
             reportConnectionResult(new Error("NFC IsoDep not set"));
@@ -684,7 +684,7 @@ class DataTransportNfc extends DataTransport {
                         //Log.d(TAG, "Waiting for message to send");
                         byte[] messageToSend = null;
                         try {
-                            messageToSend = mWriterQueue.poll(1000, TimeUnit.MILLISECONDS);
+                            messageToSend = mWriterQueue.poll(1000, MILLISECONDS);
                             if (messageToSend == null) {
                                 continue;
                             }

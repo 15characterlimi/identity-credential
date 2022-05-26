@@ -171,7 +171,7 @@ class Util {
                 byte b = bytes[offset++];
                 sb.append(String.format("%02x", b));
             }
-            Log.i(tag, "data: " + sb.toString());
+            Log.i(tag, "data: " + sb);
         } while (offset < bytes.length);
     }
 
@@ -625,7 +625,7 @@ class Util {
         array.add(protectedHeadersBytes);
         MapBuilder<ArrayBuilder<CborBuilder>> unprotectedHeaders = array.addMap();
         try {
-            if (certificateChain != null && certificateChain.size() > 0) {
+            if (certificateChain != null && !certificateChain.isEmpty()) {
                 if (certificateChain.size() == 1) {
                     X509Certificate cert = certificateChain.iterator().next();
                     unprotectedHeaders.put(COSE_LABEL_X5CHAIN, cert.getEncoded());
@@ -1043,7 +1043,7 @@ class Util {
         }
         DataItem keyDataItem = key >= 0 ? new UnsignedInteger(key) : new NegativeInteger(key);
         DataItem item = ((Map) map).get(keyDataItem);
-        if (item == null || !(item instanceof Number)) {
+        if (!(item instanceof Number)) {
             throw new IllegalArgumentException("Expected Number");
         }
         return ((Number) item).getValue().intValue();
@@ -1054,7 +1054,7 @@ class Util {
             throw new IllegalArgumentException("Expected map");
         }
         DataItem item = ((Map) map).get(new UnicodeString(key));
-        if (item == null || !(item instanceof Number)) {
+        if (!(item instanceof Number)) {
             throw new IllegalArgumentException("Expected Number");
         }
         return ((Number) item).getValue().intValue();
@@ -1094,7 +1094,7 @@ class Util {
             throw new IllegalArgumentException("Expected map");
         }
         DataItem item = ((Map) map).get(new UnicodeString(key));
-        if (item == null || !(item instanceof Array)) {
+        if (!(item instanceof Array)) {
             throw new IllegalArgumentException("Expected Array");
         }
         return ((Array) item).getDataItems();
@@ -1107,7 +1107,7 @@ class Util {
         }
         DataItem keyDataItem = key >= 0 ? new UnsignedInteger(key) : new NegativeInteger(key);
         DataItem item = ((Map) map).get(keyDataItem);
-        if (item == null || !(item instanceof Array)) {
+        if (!(item instanceof Array)) {
             throw new IllegalArgumentException("Expected Array");
         }
         return ((Array) item).getDataItems();
@@ -1120,7 +1120,7 @@ class Util {
             throw new IllegalArgumentException("Expected map");
         }
         DataItem item = ((Map) map).get(new UnicodeString(key));
-        if (item == null || !(item instanceof Map)) {
+        if (!(item instanceof Map)) {
             throw new IllegalArgumentException("Expected Map");
         }
         return item;
@@ -1164,7 +1164,7 @@ class Util {
         }
         DataItem keyDataItem = key >= 0 ? new UnsignedInteger(key) : new NegativeInteger(key);
         DataItem item = ((Map) map).get(keyDataItem);
-        if (item == null || !(item instanceof ByteString)) {
+        if (!(item instanceof ByteString)) {
             throw new IllegalArgumentException("Expected ByteString");
         }
         return ((ByteString) item).getBytes();
@@ -1177,7 +1177,7 @@ class Util {
             throw new IllegalArgumentException("Expected map");
         }
         DataItem item = ((Map) map).get(new UnicodeString(key));
-        if (item == null || !(item instanceof ByteString)) {
+        if (!(item instanceof ByteString)) {
             throw new IllegalArgumentException("Expected ByteString");
         }
         return ((ByteString) item).getBytes();
@@ -1188,7 +1188,7 @@ class Util {
             throw new IllegalArgumentException("Expected map");
         }
         DataItem item = ((Map) map).get(new UnicodeString(key));
-        if (item == null || !(item instanceof SimpleValue)) {
+        if (!(item instanceof SimpleValue)) {
             throw new IllegalArgumentException("Expected SimpleValue");
         }
         return ((SimpleValue) item).getSimpleValueType() == SimpleValueType.TRUE;
@@ -1200,7 +1200,7 @@ class Util {
         }
         DataItem keyDataItem = key >= 0 ? new UnsignedInteger(key) : new NegativeInteger(key);
         DataItem item = ((Map) map).get(keyDataItem);
-        if (item == null || !(item instanceof SimpleValue)) {
+        if (!(item instanceof SimpleValue)) {
             throw new IllegalArgumentException("Expected SimpleValue");
         }
         return ((SimpleValue) item).getSimpleValueType() == SimpleValueType.TRUE;
@@ -1211,7 +1211,7 @@ class Util {
             throw new IllegalArgumentException("Expected map");
         }
         DataItem item = ((Map) map).get(new UnicodeString(key));
-        if (item == null || !(item instanceof UnicodeString)) {
+        if (!(item instanceof UnicodeString)) {
             throw new IllegalArgumentException("Expected ByteString");
         }
         return cborDecodeDateTime(item);
@@ -1382,13 +1382,13 @@ class Util {
                 // Major type 3: string of Unicode characters that is encoded as UTF-8 [RFC3629].
                 String value = ((UnicodeString) dataItem).getString();
                 // TODO: escape ' in |value|
-                sb.append("'" + value + "'");
+                sb.append("'").append(value).append("'");
             }
             break;
             case ARRAY: {
                 // Major type 4: an array of data items.
                 List<DataItem> items = ((co.nstant.in.cbor.model.Array) dataItem).getDataItems();
-                if (items.size() == 0) {
+                if (items.isEmpty()) {
                     sb.append("[]");
                 } else if (cborAreAllDataItemsNonCompound(items)) {
                     // The case where everything fits on one line.
@@ -1402,7 +1402,7 @@ class Util {
                     }
                     sb.append("]");
                 } else {
-                    sb.append("[\n" + indentString);
+                    sb.append("[\n").append(indentString);
                     int count = 0;
                     for (DataItem item : items) {
                         sb.append("  ");
@@ -1410,7 +1410,7 @@ class Util {
                         if (++count < items.size()) {
                             sb.append(",");
                         }
-                        sb.append("\n" + indentString);
+                        sb.append("\n").append(indentString);
                     }
                     sb.append("]");
                 }
@@ -1419,10 +1419,10 @@ class Util {
             case MAP: {
                 // Major type 5: a map of pairs of data items.
                 Collection<DataItem> keys = ((co.nstant.in.cbor.model.Map) dataItem).getKeys();
-                if (keys.size() == 0) {
+                if (keys.isEmpty()) {
                     sb.append("{}");
                 } else {
-                    sb.append("{\n" + indentString);
+                    sb.append("{\n").append(indentString);
                     int count = 0;
                     for (DataItem key : keys) {
                         sb.append("  ");
@@ -1433,7 +1433,7 @@ class Util {
                         if (++count < keys.size()) {
                             sb.append(",");
                         }
-                        sb.append("\n" + indentString);
+                        sb.append("\n").append(indentString);
                     }
                     sb.append("}");
                 }

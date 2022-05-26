@@ -181,7 +181,7 @@ public final class DeviceRequestParser {
                             throw new IllegalArgumentException(
                                     "No x5chain element in reader signature");
                         }
-                        PublicKey readerKey = readerCertChain.iterator().next().getPublicKey();
+                        PublicKey readerKey = readerCertChain.get(0).getPublicKey();
 
                         byte[] encodedReaderAuthentication = Util.cborEncode(new CborBuilder()
                                 .addArray()
